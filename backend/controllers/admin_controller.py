@@ -11,6 +11,7 @@ from dependencies.auth import get_current_admin
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+# ADMIN NEWLY REGISTER
 @router.post("/register")
 def register_admin(data: AdminRegister, db: Session = Depends(get_db)):
     service = AdminService(AdminRepository(db))
@@ -22,7 +23,8 @@ def register_admin(data: AdminRegister, db: Session = Depends(get_db)):
         "admin_id": admin.id,
         "email": admin.email
     }
-
+    
+# ADMIN LOGIN
 @router.post("/login")
 def login_admin(data: AdminLogin, db: Session = Depends(get_db)):
     service = AdminService(AdminRepository(db))
@@ -34,6 +36,7 @@ def login_admin(data: AdminLogin, db: Session = Depends(get_db)):
         "message": "OTP sent to email. Please verify."
     }
 
+# ADMIN OTP VERIFY AND JWT TOKEN GENERATION
 @router.post("/verify-otp")
 def verify_otp(data: AdminOTPVerify,response:Response, db: Session = Depends(get_db)):
     service = AdminService(AdminRepository(db))
@@ -58,12 +61,7 @@ def verify_otp(data: AdminOTPVerify,response:Response, db: Session = Depends(get
         "admin_id": admin.id,
     }
 
-@router.get("/drivers")
-def get_all_drivers(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin)):
-    service = AdminService(AdminRepository(db))
-    drivers = service.get_all_drivers()
-    return {"drivers": drivers, "accessed_by": current_admin["email"]}
-
+# ADD NEW DRIVER AND SEND CREDENTIALS VIA EMAIL
 @router.post("/add-new-driver")
 def add_new_driver(data: AddNewDriver, db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin)):
     service = AdminService(AdminRepository(db))
@@ -74,13 +72,30 @@ def add_new_driver(data: AddNewDriver, db: Session = Depends(get_db), current_ad
         "email": driver.email,
         "added_by": current_admin["email"]
     }
-    
+
+
+# LIST ALL DRIVERS
+@router.get("/drivers")
+def get_all_drivers(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin)):
+    service = AdminService(AdminRepository(db))
+    drivers = service.get_all_drivers()
+    return {"drivers": drivers, "accessed_by": current_admin["email"]}
+
+# LIST ALL ORDERS
 @router.get("/orders")
 def get_all_orders(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin)):
     service = AdminService(AdminRepository(db))
     orders = service.get_all_orders()
     return {"orders": orders, "accessed_by": current_admin["email"]}
 
+# LIST AVAILABLE ORDERS FOR ASSIGNMENT || NOT ASSIGNED TO ANY DRIVER
+@router.get("/orders/available")
+def get_available_orders(db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin)):
+    service = AdminService(AdminRepository(db))
+    orders = service.get_available_orders()
+    return {"available_orders": orders, "accessed_by": current_admin["email"]}
+
+# ASSIGN ORDER TO DRIVER
 @router.post("/assign-order")
 def assign_order(data: AssignDriver, db: Session = Depends(get_db), current_admin: dict = Depends(get_current_admin)):
     service = AdminService(AdminRepository(db))
@@ -94,16 +109,19 @@ def assign_order(data: AssignDriver, db: Session = Depends(get_db), current_admi
         "driver_id": assignment.driver_id,
         "assigned_by": current_admin["email"]
     }
-    
+
+# GET ASSIGNED ORDERS IN DESCENDING ORDER OF ASSIGNMENT TIME
 @router.get("/ordered-assignments")
-def fetch_ordered_assignments(
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
+def fetch_ordered_assignments(db: Session = Depends(get_db),):
     service = AdminService(AdminRepository(db))
     assignments = service.get_ordered_assignments()
     return {
         "assignments": assignments,
-        "accessed_by": current_admin["email"]
     }
-    
+
+# GET LATEST UPDATES ON ASSIGNED ORDERS
+@router.get("/latest-updates")
+def fetch_latest_updates(db: Session = Depends(get_db)):
+    service = AdminService(AdminRepository(db))
+    updates = service.get_latest_updates()
+    return updates

@@ -49,6 +49,9 @@ class AdminService:
     def get_all_orders(self):
         return self.repo.get_all_orders()
     
+    def get_available_orders(self):
+        return self.repo.get_available_orders()
+    
     def assign_order_to_driver(self, order_id: int, driver_id: int):
         # Check if order exists
         order = self.repo.get_order_by_id(order_id)
@@ -74,3 +77,6 @@ class AdminService:
     
     def get_ordered_assignments(self):
         return self.repo.get_all_order_assignments()
+    
+    def get_latest_updates(self):
+        return self.repo.get_latest_updates()
